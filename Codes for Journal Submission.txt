@@ -1,0 +1,91 @@
+
+STATA version 17.0 is used for estimating regressions
+Variables names and definitions are presented as follows:
+
+anxiety : is one if an individual feels anxious due to COVID-19
+boredom : is one if an individual feels bord due to COVID-19
+troublesleep : is one if an individual feels insomniac due to COVID-19
+loneliness : is one if an individual feels lonely due to COVID-19
+lostjob : is one if an individual has been unemployed due to COVID-19
+mortgage: is one if an individual borrowed loans for buying a house
+gender: is one if an individual is female
+age_group: is a categorical variable for different age groups (0 for over 65, 1 for 18-25, 2 for 26-35, 3 for 36-45, 4 for 46-55, 5 for 56-65)
+income_group: is a categorical variable for different income groups (0 for the lowest quantile of income, 1 for the second quantile of income , 2 for the third quantile of income, 3 for the fourth quantile of income, 4 for the highest quantile of income)
+current_living_area:  is a categorical variable for different living locations (0 for rural, 1 for semi-urban, 2 for urban) 
+smoker : is one if an individual uses tobacco
+attended_religious_services: is one if an individual does religious activities at least once a week
+region: is a dummy variable for different regions in a country
+country: is a country dummy variable 
+MWLI : is a created index for the Mental Wellbeing Loss Index
+laborstatus:  is a categorical variable for working status (0  for individuals not employed, 1 for full employed, 2 for part-time employed , 3 for self employed)
+
+
+### Marginal Effects FOR LOGIT Model
+### Baseline Model 
+
+logistic anxiety i.lostjob  i.region i.country, coef
+margins, dydx(*) post
+
+logistic boredom i.lostjob  i.region i.country, coef
+eststo margin2: margins, dydx(*) post
+
+logistic troublesleep i.lostjob  i.region i.country, coef
+margins, dydx(*) post
+
+logistic loneliness i.lostjob  i.region i.country, coef
+ margins, dydx(*) post
+
+
+#### Model with Full Set of Variables
+
+logistic anxiety i.lostjob i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country, coef
+margins, dydx(*) post
+
+logistic boredom i.lostjob i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country, coef
+ margins, dydx(*) post
+
+
+logistic troublesleep i.lostjob i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country, coef
+margins, dydx(*) post
+
+
+logistic loneliness i.lostjob i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country, coef
+ margins, dydx(*) post
+
+####  Creating Mental Wellbeing Loss Index (Principal Component Factor Analysis)
+
+factor anxiety boredom troublesleep loneliness, pcf
+
+rotate
+
+predict MWLI
+
+### Kaiser-Meyer-Olkin measure of sampling adequacy
+
+kmo
+
+
+### Models based on Mental wellbeing Loss Index 
+### Baseline Model 
+
+reg MWLI i.lostjob  i.region i.country
+
+reg MWLI i.lostjob i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country 
+
+
+### Estimates by Using TSLS 
+
+ivreg2  anxiety i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country (lostjob =  i.laborstatus i.gender i.age_group i.current_living_area i.country i.region), robust
+
+ivreg2  boredom i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country (lostjob =  i.laborstatus i.gender i.age_group i.current_living_area i.country i.region), robust
+
+ivreg2  troublesleep i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country (lostjob =  i.laborstatus i.gender i.age_group i.current_living_area  i.country i.region), robust
+
+ivreg2  loneliness i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country (lostjob =  i.laborstatus i.gender i.age_group i.current_living_area i.country i.region), robust
+
+ivreg2  MWLI i.mortgage i.gender i.age_group i.income_group i.current_living_area i.smoker i.attended_religious_services i.region i.country (lostjob =  i.laborstatus i.gender i.age_group i.current_living_area i.country i.region), robust
+  
+ ### First Stage Regression
+
+reg lostjob i.laborstatus i.gender i.age_group i.current_living_area i.region i.country, robust
+
